@@ -225,6 +225,8 @@
             position: relative;
             overflow: hidden;
             min-height: 160px;
+            text-decoration: none;
+            color: inherit;
         }
 
         .topic-card:hover {
@@ -264,7 +266,7 @@
             line-height: 1.3;
         }
 
-        /* ========== MODAL ========== */
+        /* ========== MODAL (apenas para ajuda) ========== */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -285,7 +287,7 @@
             border-radius: 20px;
             border: 1px solid var(--primary-green);
             width: 90%;
-            max-width: 900px;
+            max-width: 600px;
             max-height: 90vh;
             overflow: hidden;
             display: flex;
@@ -336,49 +338,41 @@
             flex: 1;
         }
 
-        .subtopics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .subtopic-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 25px 15px;
-            display: flex;
+        /* ========== LOADING OVERLAY ========== */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 22, 0.95);
+            z-index: 3000;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            min-height: 140px;
+            backdrop-filter: blur(10px);
         }
 
-        .subtopic-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--primary-green);
-            background: rgba(16, 185, 129, 0.1);
-            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);
+        .loading-spinner {
+            width: 80px;
+            height: 80px;
+            border: 5px solid rgba(16, 185, 129, 0.3);
+            border-top: 5px solid var(--primary-green);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
         }
 
-        .subtopic-icon {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-            transition: all 0.3s ease;
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
-        .subtopic-card:hover .subtopic-icon {
-            transform: scale(1.1);
-        }
-
-        .subtopic-title {
-            font-size: 1rem;
+        .loading-text {
+            color: var(--primary-green);
+            font-size: 1.2rem;
             font-weight: 600;
-            color: var(--text-primary);
         }
 
         /* ========== SCROLLBAR ========== */
@@ -448,11 +442,6 @@
             .modal-body {
                 padding: 20px;
             }
-            
-            .subtopics-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 15px;
-            }
         }
 
         @media (max-width: 480px) {
@@ -492,16 +481,18 @@
             .topic-title {
                 font-size: 0.85rem;
             }
-            
-            .subtopics-grid {
-                grid-template-columns: 1fr;
-            }
         }
     </style>
 </head>
 <body>
     <!-- ========== FUNDO ANIMADO ========== -->
     <div class="animated-bg" id="animatedBg"></div>
+
+    <!-- ========== LOADING OVERLAY ========== -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text" id="loadingText">Carregando conteúdo...</div>
+    </div>
 
     <!-- ========== HEADER ========== -->
     <header class="main-header">
@@ -527,9 +518,9 @@
             <h1 class="intro-title">Sistema de Estudos de Biologia</h1>
             <p class="intro-subtitle">
                 Explore os 41 tópicos fundamentais da biologia organizados em 4 seções. 
-                Clique em qualquer tópico para acessar o conteúdo detalhado.
+                Clique em qualquer tópico para acessar a página completa no GitHub Pages.
             </p>
-            <button class="intro-btn" onclick="showAllTopics()">
+            <button class="intro-btn" onclick="showAllTopicsModal()">
                 <i class="fas fa-list"></i>
                 Ver Todos os Tópicos
             </button>
@@ -568,13 +559,13 @@
         </div>
     </main>
 
-    <!-- ========== MODAL ========== -->
+    <!-- ========== MODAL APENAS PARA AJUDA ========== -->
     <div class="modal-overlay" id="modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 class="modal-title" id="modalTitle">
-                    <i class="fas fa-book"></i>
-                    <span id="modalTitleText">Tópico</span>
+                    <i class="fas fa-question-circle"></i>
+                    <span id="modalTitleText">Ajuda</span>
                 </h2>
                 <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
@@ -586,8 +577,6 @@
 
     <script>
         // ========== DADOS ORIGINAIS ==========
-        // Mantendo exatamente os dados originais do BioV6.html
-
         const topics = [
             // Fundamentos da Vida (1-11)
             { number: "1", title: "Origem da Vida", icon: "🌋", section: 1 },
@@ -639,34 +628,13 @@
             { number: "41", title: "Equilíbrio Ecológico", icon: "⚖️", section: 4 }
         ];
 
-        const subtopics = {
-            "1": [
-                { title: "Big Bang", icon: "🌌" },
-                { title: "Pensadores", icon: "🤔" },
-                { title: "Teoria da Evolução Química", icon: "🧪" },
-                { title: "Hipótese Autotrófica", icon: "🌿" }
-            ]
-        };
-
-        const pensadores = {
-            "Pensadores": [
-                { title: "Aristóteles", icon: "👨‍🎓" },
-                { title: "Religião", icon: "⛪" },
-                { title: "Van Helmont (Jean-Baptiste)", icon: "🌿" },
-                { title: "Francesco Redi", icon: "🧪" },
-                { title: "Antoine", icon: "🔥" },
-                { title: "John Needham", icon: "🔬" },
-                { title: "Lazzaro Spallanzani", icon: "🧫" },
-                { title: "Louis Pasteur", icon: "🔍" },
-                { title: "Alexander Oparin", icon: "🧪" },
-                { title: "J.B.S. Haldane", icon: "🧬" },
-                { title: "Stanley Miller", icon: "⚡" }
-            ]
-        };
+        // ========== CONFIGURAÇÃO DO GITHUB PAGES ==========
+        const GITHUB_USERNAME = "seu-usuario"; // SUBSTITUA PELO SEU USERNAME DO GITHUB
+        const REPOSITORY_NAME = "biolomem"; // SUBSTITUA PELO NOME DO SEU REPOSITÓRIO
+        const BASE_URL = `https://${GITHUB_USERNAME}.github.io/${REPOSITORY_NAME}/`;
 
         // ========== VARIÁVEIS GLOBAIS ==========
         let soundEnabled = true;
-        let currentModalStack = [];
 
         // ========== INICIALIZAÇÃO ==========
         document.addEventListener('DOMContentLoaded', function() {
@@ -686,7 +654,6 @@
         function createAnimatedBackground() {
             const bg = document.getElementById('animatedBg');
             
-            // Criar partículas flutuantes
             for (let i = 0; i < 15; i++) {
                 const particle = document.createElement('div');
                 particle.className = 'floating-particle';
@@ -708,12 +675,10 @@
                 document.getElementById('section4')
             ];
             
-            // Limpar seções
             sections.forEach(section => section.innerHTML = '');
             
-            // Adicionar cartões
             topics.forEach(topic => {
-                const card = document.createElement('div');
+                const card = document.createElement('a');
                 card.className = 'topic-card';
                 card.dataset.topicNumber = topic.number;
                 
@@ -723,282 +688,74 @@
                     <div class="topic-title">${topic.title}</div>
                 `;
                 
-                card.addEventListener('click', () => openTopicModal(topic));
+                // Remover o event listener antigo e usar href diretamente
+                const topicUrl = getTopicUrl(topic.number);
+                card.href = topicUrl;
+                card.onclick = (e) => {
+                    e.preventDefault();
+                    navigateToTopic(topic);
+                };
                 
-                // Adicionar à seção correta
                 if (topic.section >= 1 && topic.section <= 4) {
                     sections[topic.section - 1].appendChild(card);
                 }
             });
         }
 
-        // ========== MODAL ==========
-        function openTopicModal(topic) {
-            currentModalStack = [{ type: 'topic', data: topic }];
-            updateModal();
-            document.getElementById('modal').style.display = 'flex';
+        // ========== NAVEGAÇÃO PARA TÓPICOS ==========
+        function getTopicUrl(topicNumber) {
+            const formattedNumber = topicNumber.padStart(2, '0');
+            return `${BASE_URL}topico-${formattedNumber}/`;
         }
 
-        function openSubtopicModal(topic, subtopic) {
-            currentModalStack.push({ type: 'subtopic', data: subtopic });
-            updateModal();
-        }
-
-        function openPensadorModal(topic, subtopic, pensador) {
-            currentModalStack.push({ type: 'pensador', data: pensador });
-            updateModal();
-        }
-
-        function updateModal() {
-            const current = currentModalStack[currentModalStack.length - 1];
-            const modalTitle = document.getElementById('modalTitleText');
-            const modalBody = document.getElementById('modalBody');
+        function navigateToTopic(topic) {
+            showLoading(`Abrindo ${topic.title}...`);
             
-            if (current.type === 'topic') {
-                const topic = current.data;
-                modalTitle.textContent = `${topic.number} - ${topic.title}`;
-                
-                const topicSubtopics = subtopics[topic.number];
-                
-                let content = `
-                    <div style="text-align: center; margin-bottom: 30px;">
-                        <div style="font-size: 4rem; margin-bottom: 15px;">${topic.icon}</div>
-                        <p style="color: var(--text-secondary); font-size: 1.1rem; max-width: 600px; margin: 0 auto;">
-                            Conteúdo do tópico <strong style="color: var(--primary-green);">"${topic.title}"</strong>
-                        </p>
-                    </div>
-                `;
-                
-                if (topicSubtopics) {
-                    content += `
-                        <h3 style="color: var(--primary-green); text-align: center; margin-bottom: 20px; font-size: 1.4rem;">
-                            Subtópicos
-                        </h3>
-                        <div class="subtopics-grid">
-                            ${topicSubtopics.map(subtopic => `
-                                <div class="subtopic-card" data-subtopic="${subtopic.title}">
-                                    <div class="subtopic-icon">${subtopic.icon}</div>
-                                    <div class="subtopic-title">${subtopic.title}</div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    `;
-                } else {
-                    content += `
-                        <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 30px; text-align: center;">
-                            <p style="color: var(--text-secondary); margin-bottom: 15px;">
-                                Este tópico ainda não possui subtópicos definidos.
-                            </p>
-                            <p style="color: var(--text-secondary); font-size: 0.9rem;">
-                                Você pode adicionar subtópicos editando o código.
-                            </p>
-                        </div>
-                    `;
-                }
-                
-                modalBody.innerHTML = content;
-                
-                // Adicionar event listeners para subtópicos
-                if (topicSubtopics) {
-                    const subtopicCards = modalBody.querySelectorAll('.subtopic-card');
-                    subtopicCards.forEach(card => {
-                        card.addEventListener('click', () => {
-                            const subtopicTitle = card.dataset.subtopic;
-                            const subtopic = topicSubtopics.find(s => s.title === subtopicTitle);
-                            if (subtopic) {
-                                openSubtopicModal(topic, subtopic);
-                            }
-                        });
-                    });
-                }
-            }
-            else if (current.type === 'subtopic') {
-                const topic = currentModalStack[0].data;
-                const subtopic = current.data;
-                modalTitle.textContent = `${topic.number} - ${topic.title} - ${subtopic.title}`;
-                
-                const pensadoresList = pensadores[subtopic.title];
-                
-                let content = `
-                    <div style="text-align: center; margin-bottom: 30px;">
-                        <div style="font-size: 4rem; margin-bottom: 15px;">${subtopic.icon}</div>
-                        <p style="color: var(--text-secondary); font-size: 1.1rem; max-width: 600px; margin: 0 auto;">
-                            Conteúdo do subtópico <strong style="color: var(--primary-green);">"${subtopic.title}"</strong>
-                        </p>
-                    </div>
-                `;
-                
-                if (pensadoresList) {
-                    content += `
-                        <h3 style="color: var(--primary-green); text-align: center; margin-bottom: 20px; font-size: 1.4rem;">
-                            Principais ${subtopic.title}
-                        </h3>
-                        <div class="subtopics-grid">
-                            ${pensadoresList.map(pensador => `
-                                <div class="subtopic-card" data-pensador="${pensador.title}">
-                                    <div class="subtopic-icon">${pensador.icon}</div>
-                                    <div class="subtopic-title">${pensador.title}</div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    `;
-                } else {
-                    content += `
-                        <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 30px; text-align: center;">
-                            <p style="color: var(--text-secondary); margin-bottom: 15px;">
-                                Este subtópico ainda não possui conteúdo detalhado.
-                            </p>
-                            <p style="color: var(--text-secondary); font-size: 0.9rem;">
-                                Você pode adicionar conteúdo editando o código.
-                            </p>
-                        </div>
-                    `;
-                }
-                
-                modalBody.innerHTML = content;
-                
-                // Adicionar event listeners para pensadores
-                if (pensadoresList) {
-                    const pensadorCards = modalBody.querySelectorAll('.subtopic-card[data-pensador]');
-                    pensadorCards.forEach(card => {
-                        card.addEventListener('click', () => {
-                            const pensadorTitle = card.dataset.pensador;
-                            const pensador = pensadoresList.find(p => p.title === pensadorTitle);
-                            if (pensador) {
-                                openPensadorModal(topic, subtopic, pensador);
-                            }
-                        });
-                    });
-                }
-            }
-            else if (current.type === 'pensador') {
-                const topic = currentModalStack[0].data;
-                const subtopic = currentModalStack[1].data;
-                const pensador = current.data;
-                
-                modalTitle.textContent = `${topic.number} - ${topic.title} - ${subtopic.title} - ${pensador.title}`;
-                
-                const content = `
-                    <div style="text-align: center; margin-bottom: 30px;">
-                        <div style="font-size: 4rem; margin-bottom: 15px;">${pensador.icon}</div>
-                        <p style="color: var(--text-primary); font-size: 1.3rem; margin-bottom: 10px; font-weight: 700;">
-                            ${pensador.title}
-                        </p>
-                        <p style="color: var(--text-secondary); font-size: 1.1rem; max-width: 600px; margin: 0 auto;">
-                            Informações detalhadas sobre <strong style="color: var(--primary-green);">${pensador.title}</strong>
-                        </p>
-                    </div>
-                    
-                    <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 25px; margin-top: 20px;">
-                        <h4 style="color: var(--primary-green); margin-bottom: 15px;">O que você pode incluir:</h4>
-                        <ul style="color: var(--text-secondary); padding-left: 20px; line-height: 1.6;">
-                            <li>Principais contribuições</li>
-                            <li>Experimentos importantes</li>
-                            <li>Datas e contexto histórico</li>
-                            <li>Imagens e diagramas</li>
-                            <li>Links para material complementar</li>
-                        </ul>
-                    </div>
-                `;
-                
-                modalBody.innerHTML = content;
-            }
+            const topicUrl = getTopicUrl(topic.number);
             
-            // Adicionar botão de voltar se houver mais de um nível
-            if (currentModalStack.length > 1) {
-                const backButton = document.createElement('button');
-                backButton.innerHTML = '<i class="fas fa-arrow-left"></i> Voltar';
-                backButton.style.cssText = `
-                    margin-bottom: 20px;
-                    padding: 10px 20px;
-                    background: rgba(255,255,255,0.1);
-                    border: 1px solid var(--primary-green);
-                    border-radius: 8px;
-                    color: var(--primary-green);
-                    cursor: pointer;
-                    font-weight: 600;
-                    transition: all 0.3s ease;
-                `;
-                backButton.onmouseover = () => {
-                    backButton.style.background = 'rgba(16, 185, 129, 0.1)';
-                };
-                backButton.onmouseout = () => {
-                    backButton.style.background = 'rgba(255,255,255,0.1)';
-                };
-                backButton.onclick = () => {
-                    currentModalStack.pop();
-                    updateModal();
-                };
-                
-                modalBody.insertBefore(backButton, modalBody.firstChild);
-            }
-        }
-
-        function closeModal() {
-            document.getElementById('modal').style.display = 'none';
-            currentModalStack = [];
-        }
-
-        // ========== FUNÇÕES ADICIONAIS ==========
-        function showAllTopics() {
-            currentModalStack = [{ type: 'all-topics', data: null }];
-            
-            const modalTitle = document.getElementById('modalTitleText');
-            const modalBody = document.getElementById('modalBody');
-            
-            modalTitle.textContent = 'Todos os Tópicos';
-            
-            let content = `
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <p style="color: var(--text-secondary); font-size: 1.1rem;">
-                        Clique em qualquer tópico para acessar o conteúdo detalhado
-                    </p>
-                </div>
-                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;">
-            `;
-            
-            topics.forEach(topic => {
-                content += `
-                    <div class="subtopic-card" style="min-height: 80px; flex-direction: row; justify-content: flex-start; gap: 15px; text-align: left;" data-topic-number="${topic.number}">
-                        <div style="font-size: 1.8rem;">${topic.icon}</div>
-                        <div>
-                            <div style="font-weight: bold; color: var(--primary-green);">${topic.number}.</div>
-                            <div style="color: var(--text-primary); font-size: 0.95rem;">${topic.title}</div>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            content += '</div>';
-            modalBody.innerHTML = content;
-            
-            // Adicionar event listeners
-            const topicCards = modalBody.querySelectorAll('.subtopic-card[data-topic-number]');
-            topicCards.forEach(card => {
-                card.addEventListener('click', () => {
-                    const topicNumber = card.dataset.topicNumber;
-                    const topic = topics.find(t => t.number === topicNumber);
-                    if (topic) {
-                        openTopicModal(topic);
+            // Verificar se a página existe (opcional)
+            fetch(topicUrl, { method: 'HEAD' })
+                .then(response => {
+                    if (response.ok) {
+                        // Aguardar um pouco para mostrar a animação
+                        setTimeout(() => {
+                            hideLoading();
+                            window.location.href = topicUrl;
+                        }, 800);
+                    } else {
+                        throw new Error('Página não encontrada');
                     }
+                })
+                .catch(error => {
+                    hideLoading();
+                    showNotification(`⚠️ Página ainda não criada: ${topic.title}`, 'warning');
+                    console.log(`Crie a página em: ${topicUrl}`);
+                    
+                    // Mostrar opção para criar a página
+                    setTimeout(() => {
+                        if (confirm(`A página para "${topic.title}" ainda não foi criada.\n\nDeseja ver a estrutura sugerida?`)) {
+                            showPageStructure(topic);
+                        }
+                    }, 500);
                 });
-            });
-            
-            document.getElementById('modal').style.display = 'flex';
         }
 
-        function toggleSound() {
-            soundEnabled = !soundEnabled;
-            const btn = document.querySelector('.header-btn:nth-child(1) i');
-            btn.className = soundEnabled ? 'fas fa-volume-up' : 'fas fa-volume-mute';
+        // ========== LOADING ==========
+        function showLoading(message = "Carregando conteúdo...") {
+            const overlay = document.getElementById('loadingOverlay');
+            const text = document.getElementById('loadingText');
             
-            // Mostrar notificação
-            showNotification(soundEnabled ? 'Som ativado' : 'Som desativado');
+            text.textContent = message;
+            overlay.style.display = 'flex';
         }
 
+        function hideLoading() {
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.style.display = 'none';
+        }
+
+        // ========== MODAL DE AJUDA ==========
         function showHelp() {
-            currentModalStack = [{ type: 'help', data: null }];
-            
             const modalTitle = document.getElementById('modalTitleText');
             const modalBody = document.getElementById('modalBody');
             
@@ -1007,24 +764,37 @@
             const content = `
                 <div style="max-width: 600px; margin: 0 auto;">
                     <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 25px; margin-bottom: 20px;">
-                        <h3 style="color: var(--primary-green); margin-bottom: 15px;">Como usar o Palácio da Biologia</h3>
+                        <h3 style="color: var(--primary-green); margin-bottom: 15px;">📚 Como usar o Palácio da Biologia</h3>
                         <ul style="color: var(--text-secondary); padding-left: 20px; line-height: 1.6;">
-                            <li>Clique em qualquer tópico para abrir seu conteúdo</li>
+                            <li><strong>Clique em qualquer tópico</strong> para abrir sua página completa no GitHub Pages</li>
+                            <li>Cada tópico tem sua própria URL exclusiva</li>
                             <li>Use o botão "Ver Todos os Tópicos" para uma visão geral</li>
-                            <li>Navegue entre subtópicos clicando nos cartões</li>
-                            <li>Use o botão de voltar para retornar ao nível anterior</li>
-                            <li>Seu progresso é salvo automaticamente</li>
+                            <li>Seu progresso é salvo automaticamente no navegador</li>
+                            <li>Pode usar em qualquer dispositivo</li>
                         </ul>
                     </div>
                     
+                    <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 25px; margin-bottom: 20px;">
+                        <h3 style="color: var(--primary-green); margin-bottom: 15px;">🔗 Estrutura do GitHub Pages</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 10px;">
+                            Cada tópico está em uma página separada:
+                        </p>
+                        <code style="display: block; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 15px; color: var(--light-green);">
+                            ${BASE_URL}topico-01/<br>
+                            ${BASE_URL}topico-02/<br>
+                            ...<br>
+                            ${BASE_URL}topico-41/
+                        </code>
+                    </div>
+                    
                     <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 25px;">
-                        <h3 style="color: var(--primary-green); margin-bottom: 15px;">Dicas de Estudo</h3>
+                        <h3 style="color: var(--primary-green); margin-bottom: 15px;">🎯 Dicas de Estudo</h3>
                         <ul style="color: var(--text-secondary); padding-left: 20px; line-height: 1.6;">
                             <li>Estude um tópico por dia</li>
-                            <li>Revise os tópicos anteriores regularmente</li>
-                            <li>Use as anotações para registrar pontos importantes</li>
-                            <li>Faça os quizzes para testar seu conhecimento</li>
-                            <li>Associe cada tópico a uma imagem ou história</li>
+                            <li>Faça anotações enquanto estuda</li>
+                            <li>Revise os tópicos anteriores toda semana</li>
+                            <li>Complete os quizzes para fixar o conteúdo</li>
+                            <li>Associe imagens aos conceitos</li>
                         </ul>
                     </div>
                 </div>
@@ -1034,34 +804,80 @@
             document.getElementById('modal').style.display = 'flex';
         }
 
-        function showNotification(message) {
-            // Criar elemento de notificação
+        function showAllTopicsModal() {
+            const modalTitle = document.getElementById('modalTitleText');
+            const modalBody = document.getElementById('modalBody');
+            
+            modalTitle.textContent = 'Todos os Tópicos';
+            
+            let content = `
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <p style="color: var(--text-secondary); font-size: 1.1rem;">
+                        Clique em qualquer tópico para acessar a página completa
+                    </p>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; max-height: 60vh; overflow-y: auto; padding: 10px;">
+            `;
+            
+            topics.forEach(topic => {
+                const topicUrl = getTopicUrl(topic.number);
+                content += `
+                    <a href="${topicUrl}" class="topic-card" style="min-height: 80px; flex-direction: row; justify-content: flex-start; gap: 15px; text-align: left;" onclick="event.preventDefault(); navigateToTopic(${JSON.stringify(topic)})">
+                        <div style="font-size: 1.8rem;">${topic.icon}</div>
+                        <div>
+                            <div style="font-weight: bold; color: var(--primary-green);">${topic.number}.</div>
+                            <div style="color: var(--text-primary); font-size: 0.95rem;">${topic.title}</div>
+                        </div>
+                    </a>
+                `;
+            });
+            
+            content += '</div>';
+            modalBody.innerHTML = content;
+            
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        // ========== FUNÇÕES ADICIONAIS ==========
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.querySelector('.header-btn:nth-child(1) i');
+            btn.className = soundEnabled ? 'fas fa-volume-up' : 'fas fa-volume-mute';
+            
+            showNotification(soundEnabled ? '🔊 Som ativado' : '🔇 Som desativado');
+        }
+
+        function showNotification(message, type = 'info') {
             const notification = document.createElement('div');
             notification.style.cssText = `
                 position: fixed;
                 top: 80px;
                 right: 20px;
-                background: rgba(16, 185, 129, 0.9);
+                background: ${type === 'warning' ? 'rgba(245, 158, 11, 0.9)' : 'rgba(16, 185, 129, 0.9)'};
                 color: white;
                 padding: 15px 25px;
                 border-radius: 10px;
                 z-index: 10000;
                 font-weight: 600;
                 backdrop-filter: blur(10px);
-                border: 1px solid var(--primary-green);
+                border: 1px solid ${type === 'warning' ? '#f59e0b' : 'var(--primary-green)'};
                 transform: translateX(120%);
                 transition: transform 0.3s ease;
+                max-width: 300px;
+                word-wrap: break-word;
             `;
             
             notification.textContent = message;
             document.body.appendChild(notification);
             
-            // Animar entrada
             setTimeout(() => {
                 notification.style.transform = 'translateX(0)';
             }, 10);
             
-            // Remover após 3 segundos
             setTimeout(() => {
                 notification.style.transform = 'translateX(120%)';
                 setTimeout(() => {
@@ -1070,11 +886,56 @@
             }, 3000);
         }
 
+        function showPageStructure(topic) {
+            const modalTitle = document.getElementById('modalTitleText');
+            const modalBody = document.getElementById('modalBody');
+            
+            modalTitle.textContent = `Estrutura para: ${topic.title}`;
+            
+            const content = `
+                <div style="max-width: 600px; margin: 0 auto;">
+                    <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 25px; margin-bottom: 20px;">
+                        <h3 style="color: var(--primary-green); margin-bottom: 15px;">📁 Crie esta estrutura no GitHub:</h3>
+                        <code style="display: block; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; margin-bottom: 15px; color: var(--light-green); font-family: 'Source Code Pro', monospace; white-space: pre-wrap;">
+/${REPOSITORY_NAME}/
+├── index.html (esta página)
+└── /topico-${topic.number.padStart(2, '0')}/
+    ├── index.html (página principal do tópico)
+    ├── estilo.css
+    ├── script.js
+    └── /quizzes/ (pasta opcional)
+</code>
+                        
+                        <p style="color: var(--text-secondary); margin-top: 15px;">
+                            <strong>URL do tópico:</strong><br>
+                            <code style="color: var(--light-green);">${getTopicUrl(topic.number)}</code>
+                        </p>
+                    </div>
+                    
+                    <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 25px;">
+                        <h3 style="color: var(--primary-green); margin-bottom: 15px;">📝 Conteúdo sugerido:</h3>
+                        <ul style="color: var(--text-secondary); padding-left: 20px; line-height: 1.6;">
+                            <li>Explicação teórica resumida</li>
+                            <li>Imagens e diagramas</li>
+                            <li>Exemplos práticos</li>
+                            <li>Quiz de fixação (5-10 perguntas)</li>
+                            <li>Links para material complementar</li>
+                            <li>Exercícios resolvidos</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+            
+            modalBody.innerHTML = content;
+            document.getElementById('modal').style.display = 'flex';
+        }
+
         function setupEventListeners() {
             // Fechar modal com ESC
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
                     closeModal();
+                    hideLoading();
                 }
             });
             
@@ -1089,12 +950,10 @@
         function optimizeForMobile() {
             console.log('📱 Aplicando otimizações para dispositivos móveis...');
             
-            // Aumentar áreas de toque
-            document.querySelectorAll('button, .topic-card, .subtopic-card').forEach(el => {
+            document.querySelectorAll('a, button, .topic-card').forEach(el => {
                 el.style.minHeight = '44px';
             });
             
-            // Habilitar scroll suave
             document.documentElement.style.cssText += `
                 -webkit-overflow-scrolling: touch;
                 overscroll-behavior: none;
@@ -1105,8 +964,16 @@
         // ========== INICIALIZAR APÓS CARREGAMENTO ==========
         window.onload = function() {
             setTimeout(() => {
-                showNotification('Bem-vindo ao Palácio da Biologia!');
-            }, 1500);
+                showNotification('🏛️ Bem-vindo ao Palácio da Biologia!');
+            }, 1000);
+            
+            // Mostrar instrução inicial
+            setTimeout(() => {
+                if (!localStorage.getItem('firstVisit')) {
+                    showHelp();
+                    localStorage.setItem('firstVisit', 'true');
+                }
+            }, 2000);
         };
     </script>
 </body>
