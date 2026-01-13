@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>36 - Teoria da Evolução | Palácio da Biologia</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700;900&family=Source+Code+Pro:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ========== VARIÁVEIS E RESET ========== */
+        :root {
+            --primary-green: #10b981;
+            --secondary-green: #059669;
+            --dark-green: #064e3b;
+            --light-green: #a7f3d0;
+            --background-dark: #0a0a16;
+            --card-dark: #151530;
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            font-family: 'Exo 2', sans-serif;
+        }
+
+        body {
+            background: var(--background-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ========== FUNDO ANIMADO ========== */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(16, 185, 129, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(5, 150, 105, 0.08) 0%, transparent 40%),
+                linear-gradient(135deg, #0a0a16 0%, #0f172a 100%);
+            overflow: hidden;
+        }
+
+        .floating-particle {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--primary-green), transparent);
+            animation: floatParticle 20s infinite linear;
+            opacity: 0.1;
+        }
+
+        @keyframes floatParticle {
+            0% { transform: translateY(0) translateX(0); }
+            100% { transform: translateY(-100vh) translateX(100px); }
+        }
+
+        /* ========== HEADER ========== */
+        .main-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(10, 10, 22, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(16, 185, 129, 0.3);
+            z-index: 1000;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            font-size: 1.8rem;
+            color: var(--primary-green);
+            cursor: pointer;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--primary-green), var(--light-green));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 10px;
+        }
+
+        .header-btn {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+        }
+
+        .header-btn:hover {
+            color: var(--primary-green);
+            border-color: var(--primary-green);
+            transform: translateY(-2px);
+        }
+
+        /* ========== CONTEÚDO PRINCIPAL ========== */
+        .main-content {
+            padding: 120px 20px 50px;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+
+        /* ========== CABEÇALHO DO TÓPICO ========== */
+        .topic-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(30, 41, 59, 0.3);
+            border-radius: 20px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .topic-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-green), var(--secondary-green));
+        }
+
+        .topic-number {
+            font-size: 5rem;
+            font-weight: 900;
+            color: rgba(16, 185, 129, 0.1);
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1;
+        }
+
+        .topic-icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .topic-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, var(--primary-green), var(--light-green));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            position: relative;
+            z-index: 2;
+        }
+
+        .topic-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ========== BOTÃO VOLTAR ========== */
+        .back-btn {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            background: linear-gradient(45deg, var(--primary-green), var(--secondary-green));
+            border: none;
+            border-radius: 12px;
+            color: white;
+            padding: 15px 30px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+            z-index: 100;
+            text-decoration: none;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(16, 185, 129, 0.4);
+        }
+
+        /* ========== ÁREA DE CONTEÚDO ========== */
+        .content-area {
+            background: rgba(30, 41, 59, 0.3);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            min-height: 400px;
+            margin-bottom: 40px;
+        }
+
+        .content-placeholder {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .placeholder-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .placeholder-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+
+        .placeholder-text {
+            max-width: 500px;
+            margin: 0 auto 30px;
+            line-height: 1.6;
+        }
+
+        .intro-btn {
+            padding: 12px 25px;
+            background: linear-gradient(45deg, var(--primary-green), var(--secondary-green));
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .intro-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        /* ========== MENU DE SUBTÓPICOS ========== */
+        .subtopics-menu {
+            margin-bottom: 40px;
+        }
+
+        .menu-title {
+            font-size: 1.5rem;
+            color: var(--primary-green);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu-title::after {
+            content: '';
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary-green), transparent);
+        }
+
+        .subtopics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .subtopic-card {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .subtopic-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-green);
+            background: rgba(16, 185, 129, 0.1);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2);
+        }
+
+        .subtopic-icon {
+            font-size: 2.5rem;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .subtopic-info {
+            flex: 1;
+        }
+
+        .subtopic-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .subtopic-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* ========== PRÓXIMO TÓPICO ========== */
+        .next-topic {
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 20px;
+            border: 1px solid var(--primary-green);
+            padding: 30px;
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .next-topic-title {
+            font-size: 1.2rem;
+            color: var(--text-primary);
+            margin-bottom: 15px;
+        }
+
+        .next-topic-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--primary-green);
+            color: var(--primary-green);
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .next-topic-btn:hover {
+            background: var(--primary-green);
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        /* ========== FOOTER ========== */
+        .main-footer {
+            text-align: center;
+            padding: 30px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 40px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* ========== SCROLLBAR ========== */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, var(--primary-green), var(--secondary-green));
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(to bottom, var(--secondary-green), var(--dark-green));
+        }
+
+        /* ========== RESPONSIVIDADE ========== */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 100px 15px 40px;
+            }
+            
+            .topic-title {
+                font-size: 2rem;
+            }
+            
+            .topic-icon {
+                font-size: 3rem;
+            }
+            
+            .topic-number {
+                font-size: 4rem;
+            }
+            
+            .content-area {
+                padding: 25px;
+            }
+            
+            .subtopics-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 15px;
+            }
+            
+            .back-btn {
+                bottom: 20px;
+                left: 20px;
+                padding: 12px 20px;
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .topic-title {
+                font-size: 1.8rem;
+            }
+            
+            .topic-icon {
+                font-size: 2.5rem;
+            }
+            
+            .topic-number {
+                font-size: 3rem;
+            }
+            
+            .subtopics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .subtopic-card {
+                padding: 20px 15px;
+            }
+            
+            .subtopic-icon {
+                font-size: 2rem;
+                min-width: 50px;
+            }
+            
+            .back-btn {
+                bottom: 15px;
+                left: 15px;
+                right: 15px;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ========== FUNDO ANIMADO ========== -->
+    <div class="animated-bg" id="animatedBg"></div>
+
+    <!-- ========== HEADER ========== -->
+    <header class="main-header">
+        <div class="header-left">
+            <div class="logo-icon" onclick="goHome()">
+                <i class="fas fa-seedling"></i>
+            </div>
+            <div class="header-title">Palácio da Biologia</div>
+        </div>
+        <div class="header-right">
+            <button class="header-btn" onclick="toggleSound()" title="Som">
+                <i class="fas fa-volume-up"></i>
+            </button>
+            <button class="header-btn" onclick="showProgress()" title="Progresso">
+                <i class="fas fa-chart-line"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- ========== CONTEÚDO PRINCIPAL ========== -->
+    <main class="main-content">
+        <!-- CABEÇALHO DO TÓPICO -->
+        <div class="topic-header">
+            <div class="topic-number">36</div>
+            <div class="topic-icon">🦍</div>
+            <h1 class="topic-title">Teoria da Evolução</h1>
+            <p class="topic-subtitle">
+                Os princípios fundamentais do processo evolutivo
+            </p>
+        </div>
+
+        <!-- MENU DE SUBTÓPICOS -->
+        <div class="subtopics-menu">
+            <h2 class="menu-title">
+                <i class="fas fa-list-ul"></i>
+                Subtópicos
+            </h2>
+            <div class="subtopics-grid" id="subtopicsGrid">
+                <!-- Subtópicos serão carregados por JavaScript -->
+            </div>
+        </div>
+
+        <!-- ÁREA DE CONTEÚDO PRINCIPAL -->
+        <div class="content-area">
+            <div class="content-placeholder" id="contentPlaceholder">
+                <div class="placeholder-icon">
+                    <i class="fas fa-dna"></i>
+                </div>
+                <h2 class="placeholder-title">Área de Conteúdo</h2>
+                <p class="placeholder-text">
+                    Esta área será preenchida com o conteúdo do tópico quando você começar a estudar.
+                    Aqui você encontrará explicações detalhadas, imagens, diagramas e exercícios.
+                </p>
+                <button class="intro-btn" onclick="addContent()">
+                    <i class="fas fa-plus"></i>
+                    Adicionar Conteúdo
+                </button>
+            </div>
+            
+            <!-- ÁREA ONDE O CONTEÚDO SERÁ INSERIDO DINAMICAMENTE -->
+            <div id="dynamicContent" style="display: none;"></div>
+        </div>
+
+        <!-- PRÓXIMO TÓPICO -->
+        <div class="next-topic">
+            <p class="next-topic-title">Pronto para continuar sua jornada?</p>
+            <a href="../topico-37/" class="next-topic-btn" onclick="return goToNextTopic()">
+                <i class="fas fa-arrow-right"></i>
+                Ir para Tópico 37: Ecologia Populacional
+            </a>
+        </div>
+    </main>
+
+    <!-- ========== BOTÃO VOLTAR ========== -->
+    <a href="../" class="back-btn" onclick="return goHome()">
+        <i class="fas fa-arrow-left"></i>
+        Voltar ao Palácio
+    </a>
+
+    <!-- ========== FOOTER ========== -->
+    <footer class="main-footer">
+        <p>© 2024 Palácio da Biologia - BIOLOMEMO | Tópico 36 - Teoria da Evolução</p>
+        <p style="margin-top: 5px; font-size: 0.8rem; opacity: 0.7;">
+            Use esta página como template para criar conteúdo personalizado
+        </p>
+    </footer>
+
+    <script>
+        // ========== CONFIGURAÇÕES ==========
+        const TOPIC_NUMBER = "36";
+        const TOPIC_TITLE = "Teoria da Evolução";
+        const NEXT_TOPIC_URL = "../topico-37/";
+        const HOME_URL = "../";
+
+        // ========== DADOS DOS SUBTÓPICOS ==========
+        const subtopics = [
+            {
+                title: "Evidências da Evolução",
+                icon: "🔍",
+                description: "Fósseis, anatomia comparada e embriologia"
+            },
+            {
+                title: "Seleção Natural",
+                icon: "🎯",
+                description: "Mecanismos de sobrevivência diferencial"
+            },
+            {
+                title: "Deriva Genética",
+                icon: "🎲",
+                description: "Variação aleatória nas frequências gênicas"
+            },
+            {
+                title: "Especiação",
+                icon: "🌱",
+                description: "Processos de formação de novas espécies"
+            },
+            {
+                title: "Evolução Humana",
+                icon: "🧍",
+                description: "Trajetória evolutiva dos hominídeos"
+            },
+            {
+                title: "Adaptações",
+                icon: "🛡️",
+                description: "Características que aumentam a aptidão"
+            }
+        ];
+
+        // ========== INICIALIZAÇÃO ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log(`📚 Tópico ${TOPIC_NUMBER}: ${TOPIC_TITLE} carregado!`);
+            
+            createAnimatedBackground();
+            renderSubtopics();
+            setupEventListeners();
+            loadProgress();
+        });
+
+        // ========== FUNDO ANIMADO ==========
+        function createAnimatedBackground() {
+            const bg = document.getElementById('animatedBg');
+            
+            for (let i = 0; i < 10; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'floating-particle';
+                particle.style.width = particle.style.height = (10 + Math.random() * 30) + 'px';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (15 + Math.random() * 15) + 's';
+                bg.appendChild(particle);
+            }
+        }
+
+        // ========== RENDERIZAR SUBTÓPICOS ==========
+        function renderSubtopics() {
+            const grid = document.getElementById('subtopicsGrid');
+            
+            subtopics.forEach(subtopic => {
+                const card = document.createElement('a');
+                card.className = 'subtopic-card';
+                card.href = "#";
+                
+                card.innerHTML = `
+                    <div class="subtopic-icon">${subtopic.icon}</div>
+                    <div class="subtopic-info">
+                        <div class="subtopic-title">${subtopic.title}</div>
+                        <div class="subtopic-desc">${subtopic.description}</div>
+                    </div>
+                `;
+                
+                card.onclick = (e) => {
+                    e.preventDefault();
+                    openSubtopic(subtopic);
+                };
+                
+                grid.appendChild(card);
+            });
+        }
+
+        // ========== FUNÇÕES DE NAVEGAÇÃO ==========
+        function goHome() {
+            window.location.href = HOME_URL;
+            return false;
+        }
+
+        function goToNextTopic() {
+            saveProgress();
+            window.location.href = NEXT_TOPIC_URL;
+            return false;
+        }
+
+        // ========== GERENCIAMENTO DE CONTEÚDO ==========
+        function addContent() {
+            const placeholder = document.getElementById('contentPlaceholder');
+            const dynamicContent = document.getElementById('dynamicContent');
+            
+            placeholder.style.display = 'none';
+            dynamicContent.style.display = 'block';
+            
+            dynamicContent.innerHTML = `
+                <div style="text-align: center; padding: 30px;">
+                    <h2 style="color: var(--primary-green); margin-bottom: 20px;">
+                        <i class="fas fa-edit"></i> Adicionar Conteúdo
+                    </h2>
+                    <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 25px; max-width: 600px; margin: 0 auto;">
+                        <p style="color: var(--text-secondary); margin-bottom: 20px; line-height: 1.6;">
+                            Para adicionar conteúdo a este tópico, você pode:
+                        </p>
+                        <ul style="text-align: left; color: var(--text-secondary); margin-bottom: 25px; padding-left: 20px; line-height: 1.8;">
+                            <li>Escrever notas diretamente no código HTML</li>
+                            <li>Adicionar imagens e diagramas</li>
+                            <li>Criar seções para teoria e exercícios</li>
+                            <li>Inserir links para vídeos e artigos</li>
+                            <li>Adicionar quizzes interativos</li>
+                        </ul>
+                        <button onclick="showExampleContent()" style="
+                            padding: 12px 25px;
+                            background: var(--primary-green);
+                            border: none;
+                            border-radius: 8px;
+                            color: white;
+                            font-weight: 600;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                        ">
+                            Ver Exemplo de Conteúdo
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            showNotification('Área de conteúdo ativada!');
+        }
+
+        function showExampleContent() {
+            const dynamicContent = document.getElementById('dynamicContent');
+            
+            dynamicContent.innerHTML = `
+                <div style="max-width: 800px; margin: 0 auto;">
+                    <div style="margin-bottom: 40px;">
+                        <h2 style="color: var(--primary-green); margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-project-diagram"></i> Estrutura Sugerida para Conteúdo
+                        </h2>
+                        
+                        <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 25px; margin-bottom: 25px;">
+                            <h3 style="color: var(--light-green); margin-bottom: 15px;">Seções Recomendadas:</h3>
+                            <ul style="color: var(--text-secondary); padding-left: 20px; line-height: 1.6;">
+                                <li><strong>Introdução Teórica:</strong> Conceitos fundamentais</li>
+                                <li><strong>Evidências Científicas:</strong> Dados que apoiam a teoria</li>
+                                <li><strong>Mecanismos Evolutivos:</strong> Processos de mudança</li>
+                                <li><strong>Exemplos Práticos:</strong> Casos de estudo reais</li>
+                                <li><strong>Exercícios de Fixação:</strong> Questões para prática</li>
+                                <li><strong>Referências:</strong> Fontes para aprofundamento</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 30px;">
+                        <button onclick="clearContent()" style="
+                            padding: 12px 25px;
+                            background: rgba(255,255,255,0.1);
+                            border: 1px solid var(--primary-green);
+                            border-radius: 8px;
+                            color: var(--primary-green);
+                            font-weight: 600;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                        ">
+                            <i class="fas fa-trash"></i> Limpar Exemplo
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function clearContent() {
+            const placeholder = document.getElementById('contentPlaceholder');
+            const dynamicContent = document.getElementById('dynamicContent');
+            
+            placeholder.style.display = 'block';
+            dynamicContent.style.display = 'none';
+            dynamicContent.innerHTML = '';
+            
+            showNotification('Conteúdo limpo. Pronto para adicionar seu próprio material!');
+        }
+
+        // ========== GERENCIAMENTO DE PROGRESSO ==========
+        function saveProgress() {
+            const progress = {
+                topic: TOPIC_NUMBER,
+                title: TOPIC_TITLE,
+                lastVisited: new Date().toISOString(),
+                completed: true
+            };
+            
+            localStorage.setItem(`topic-${TOPIC_NUMBER}`, JSON.stringify(progress));
+            showNotification('✅ Progresso salvo!');
+        }
+
+        function loadProgress() {
+            const saved = localStorage.getItem(`topic-${TOPIC_NUMBER}`);
+            if (saved) {
+                console.log('📊 Progresso carregado:', JSON.parse(saved));
+            }
+        }
+
+        function showProgress() {
+            const allTopics = [];
+            for (let i = 1; i <= 41; i++) {
+                const key = `topic-${i.toString().padStart(2, '0')}`;
+                const progress = localStorage.getItem(key);
+                if (progress) {
+                    allTopics.push(JSON.parse(progress));
+                }
+            }
+            
+            const completed = allTopics.length;
+            const percentage = Math.round((completed / 41) * 100);
+            
+            alert(`📈 Seu Progresso:\n\n✅ Tópicos completos: ${completed}/41\n📊 Progresso total: ${percentage}%\n\nContinue assim! 🚀`);
+        }
+
+        // ========== FUNÇÕES ADICIONAIS ==========
+        function openSubtopic(subtopic) {
+            showNotification(`Abrindo: ${subtopic.title}`);
+            
+            const dynamicContent = document.getElementById('dynamicContent');
+            const placeholder = document.getElementById('contentPlaceholder');
+            
+            placeholder.style.display = 'none';
+            dynamicContent.style.display = 'block';
+            
+            dynamicContent.innerHTML = `
+                <div style="text-align: center; padding: 40px 20px;">
+                    <div style="font-size: 4rem; margin-bottom: 20px;">${subtopic.icon}</div>
+                    <h2 style="color: var(--primary-green); margin-bottom: 15px;">${subtopic.title}</h2>
+                    <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto 30px; line-height: 1.6;">
+                        ${subtopic.description}<br>
+                        <span style="opacity: 0.7; font-size: 0.9rem;">(Adicione conteúdo específico aqui)</span>
+                    </p>
+                    <button onclick="clearContent()" style="
+                        padding: 12px 25px;
+                        background: rgba(255,255,255,0.1);
+                        border: 1px solid var(--primary-green);
+                        border-radius: 8px;
+                        color: var(--primary-green);
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                    ">
+                        <i class="fas fa-times"></i> Fechar
+                    </button>
+                </div>
+            `;
+        }
+
+        function toggleSound() {
+            const soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
+            const newState = !soundEnabled;
+            
+            localStorage.setItem('soundEnabled', newState);
+            const btn = document.querySelector('.header-btn:nth-child(1) i');
+            btn.className = newState ? 'fas fa-volume-up' : 'fas fa-volume-mute';
+            
+            showNotification(newState ? '🔊 Som ativado' : '🔇 Som desativado');
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                background: ${type === 'error' ? 'rgba(239, 68, 68, 0.9)' : type === 'success' ? 'rgba(16, 185, 129, 0.9)' : 'rgba(30, 41, 59, 0.9)'};
+                color: white;
+                padding: 15px 25px;
+                border-radius: 10px;
+                z-index: 10000;
+                font-weight: 600;
+                backdrop-filter: blur(10px);
+                border: 1px solid ${type === 'error' ? '#ef4444' : type === 'success' ? 'var(--primary-green)' : 'rgba(255,255,255,0.2)'};
+                transform: translateX(120%);
+                transition: transform 0.3s ease;
+                max-width: 300px;
+                word-wrap: break-word;
+            `;
+            
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 10);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(120%)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        function setupEventListeners() {
+            const soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
+            const btn = document.querySelector('.header-btn:nth-child(1) i');
+            btn.className = soundEnabled ? 'fas fa-volume-up' : 'fas fa-volume-mute';
+            
+            window.addEventListener('beforeunload', saveProgress);
+            
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    goHome();
+                }
+            });
+        }
+
+        // ========== INICIALIZAR APÓS CARREGAMENTO ==========
+        window.onload = function() {
+            setTimeout(() => {
+                showNotification(`🦍 Bem-vindo ao Tópico ${TOPIC_NUMBER}: ${TOPIC_TITLE}`);
+            }, 500);
+        };
+    </script>
+</body>
+</html>
