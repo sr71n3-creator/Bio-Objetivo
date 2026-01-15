@@ -576,6 +576,11 @@
     </div>
 
     <script>
+        // ========== CONFIGURAÇÃO DO GITHUB PAGES ==========
+        const GITHUB_USERNAME = "Sr71n3-creator"; // SEU USERNAME DO GITHUB
+        const REPOSITORY_NAME = "biolomem"; // NOME DO SEU REPOSITÓRIO
+        const BASE_URL = `https://${GITHUB_USERNAME}.github.io/${REPOSITORY_NAME}/`;
+
         // ========== DADOS ORIGINAIS ==========
         const topics = [
             // Fundamentos da Vida (1-11)
@@ -628,11 +633,6 @@
             { number: "41", title: "Equilíbrio Ecológico", icon: "⚖️", section: 4 }
         ];
 
-        // ========== CONFIGURAÇÃO DO GITHUB PAGES ==========
-        const GITHUB_USERNAME = "seu-usuario"; // SUBSTITUA PELO SEU USERNAME DO GITHUB
-        const REPOSITORY_NAME = "biolomem"; // SUBSTITUA PELO NOME DO SEU REPOSITÓRIO
-        const BASE_URL = `https://${GITHUB_USERNAME}.github.io/${REPOSITORY_NAME}/`;
-
         // ========== VARIÁVEIS GLOBAIS ==========
         let soundEnabled = true;
 
@@ -666,6 +666,13 @@
             }
         }
 
+        // ========== FUNÇÃO PARA OBTER URL CORRETA ==========
+        function getTopicUrl(topicNumber) {
+            const formattedNumber = topicNumber.padStart(2, '0');
+            // ARQUIVO DIRETO - NÃO PASTA
+            return `${BASE_URL}topico-${formattedNumber}.html`;
+        }
+
         // ========== RENDERIZAR CARTÕES ==========
         function renderTopicCards() {
             const sections = [
@@ -688,13 +695,12 @@
                     <div class="topic-title">${topic.title}</div>
                 `;
                 
-                // Remover o event listener antigo e usar href diretamente
+                // URL DIRETA - SEM VERIFICAÇÕES
                 const topicUrl = getTopicUrl(topic.number);
                 card.href = topicUrl;
-                card.onclick = (e) => {
-                    e.preventDefault();
-                    navigateToTopic(topic);
-                };
+                card.target = "_self"; // Abre na mesma aba
+                
+                // NÃO INTERCEPTAMOS O CLIQUE - deixa o navegador fazer seu trabalho
                 
                 if (topic.section >= 1 && topic.section <= 4) {
                     sections[topic.section - 1].appendChild(card);
@@ -702,42 +708,11 @@
             });
         }
 
-        // ========== NAVEGAÇÃO PARA TÓPICOS ==========
-        function getTopicUrl(topicNumber) {
-            const formattedNumber = topicNumber.padStart(2, '0');
-            return `${BASE_URL}topico-${formattedNumber}/`;
-        }
-
-        function navigateToTopic(topic) {
-            showLoading(`Abrindo ${topic.title}...`);
-            
+        // ========== NAVEGAÇÃO DIRETA (para outros usos) ==========
+        function navigateToTopicDirectly(topic) {
+            // Função auxiliar para navegação direta
             const topicUrl = getTopicUrl(topic.number);
-            
-            // Verificar se a página existe (opcional)
-            fetch(topicUrl, { method: 'HEAD' })
-                .then(response => {
-                    if (response.ok) {
-                        // Aguardar um pouco para mostrar a animação
-                        setTimeout(() => {
-                            hideLoading();
-                            window.location.href = topicUrl;
-                        }, 800);
-                    } else {
-                        throw new Error('Página não encontrada');
-                    }
-                })
-                .catch(error => {
-                    hideLoading();
-                    showNotification(`⚠️ Página ainda não criada: ${topic.title}`, 'warning');
-                    console.log(`Crie a página em: ${topicUrl}`);
-                    
-                    // Mostrar opção para criar a página
-                    setTimeout(() => {
-                        if (confirm(`A página para "${topic.title}" ainda não foi criada.\n\nDeseja ver a estrutura sugerida?`)) {
-                            showPageStructure(topic);
-                        }
-                    }, 500);
-                });
+            window.location.href = topicUrl;
         }
 
         // ========== LOADING ==========
@@ -777,13 +752,13 @@
                     <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 25px; margin-bottom: 20px;">
                         <h3 style="color: var(--primary-green); margin-bottom: 15px;">🔗 Estrutura do GitHub Pages</h3>
                         <p style="color: var(--text-secondary); margin-bottom: 10px;">
-                            Cada tópico está em uma página separada:
+                            Cada tópico está em um arquivo HTML separado:
                         </p>
                         <code style="display: block; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 15px; color: var(--light-green);">
-                            ${BASE_URL}topico-01/<br>
-                            ${BASE_URL}topico-02/<br>
+                            ${BASE_URL}topico-01.html<br>
+                            ${BASE_URL}topico-02.html<br>
                             ...<br>
-                            ${BASE_URL}topico-41/
+                            ${BASE_URL}topico-41.html
                         </code>
                     </div>
                     
@@ -822,7 +797,7 @@
             topics.forEach(topic => {
                 const topicUrl = getTopicUrl(topic.number);
                 content += `
-                    <a href="${topicUrl}" class="topic-card" style="min-height: 80px; flex-direction: row; justify-content: flex-start; gap: 15px; text-align: left;" onclick="event.preventDefault(); navigateToTopic(${JSON.stringify(topic)})">
+                    <a href="${topicUrl}" class="topic-card" style="min-height: 80px; flex-direction: row; justify-content: flex-start; gap: 15px; text-align: left; display: flex; align-items: center; padding: 15px;">
                         <div style="font-size: 1.8rem;">${topic.icon}</div>
                         <div>
                             <div style="font-weight: bold; color: var(--primary-green);">${topic.number}.</div>
@@ -884,50 +859,6 @@
                     document.body.removeChild(notification);
                 }, 300);
             }, 3000);
-        }
-
-        function showPageStructure(topic) {
-            const modalTitle = document.getElementById('modalTitleText');
-            const modalBody = document.getElementById('modalBody');
-            
-            modalTitle.textContent = `Estrutura para: ${topic.title}`;
-            
-            const content = `
-                <div style="max-width: 600px; margin: 0 auto;">
-                    <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 25px; margin-bottom: 20px;">
-                        <h3 style="color: var(--primary-green); margin-bottom: 15px;">📁 Crie esta estrutura no GitHub:</h3>
-                        <code style="display: block; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; margin-bottom: 15px; color: var(--light-green); font-family: 'Source Code Pro', monospace; white-space: pre-wrap;">
-/${REPOSITORY_NAME}/
-├── index.html (esta página)
-└── /topico-${topic.number.padStart(2, '0')}/
-    ├── index.html (página principal do tópico)
-    ├── estilo.css
-    ├── script.js
-    └── /quizzes/ (pasta opcional)
-</code>
-                        
-                        <p style="color: var(--text-secondary); margin-top: 15px;">
-                            <strong>URL do tópico:</strong><br>
-                            <code style="color: var(--light-green);">${getTopicUrl(topic.number)}</code>
-                        </p>
-                    </div>
-                    
-                    <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 25px;">
-                        <h3 style="color: var(--primary-green); margin-bottom: 15px;">📝 Conteúdo sugerido:</h3>
-                        <ul style="color: var(--text-secondary); padding-left: 20px; line-height: 1.6;">
-                            <li>Explicação teórica resumida</li>
-                            <li>Imagens e diagramas</li>
-                            <li>Exemplos práticos</li>
-                            <li>Quiz de fixação (5-10 perguntas)</li>
-                            <li>Links para material complementar</li>
-                            <li>Exercícios resolvidos</li>
-                        </ul>
-                    </div>
-                </div>
-            `;
-            
-            modalBody.innerHTML = content;
-            document.getElementById('modal').style.display = 'flex';
         }
 
         function setupEventListeners() {
