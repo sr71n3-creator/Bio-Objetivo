@@ -92,6 +92,7 @@
         .logo-icon {
             font-size: 1.8rem;
             color: var(--primary-green);
+            cursor: pointer;
         }
 
         .header-title {
@@ -266,7 +267,20 @@
             line-height: 1.3;
         }
 
-        /* ========== MODAL (apenas para ajuda) ========== */
+        .topic-unavailable {
+            opacity: 0.6;
+            position: relative;
+        }
+
+        .topic-unavailable::after {
+            content: '🚧';
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 1rem;
+        }
+
+        /* ========== MODAL ========== */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -491,13 +505,13 @@
     <!-- ========== LOADING OVERLAY ========== -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-spinner"></div>
-        <div class="loading-text" id="loadingText">Carregando conteúdo...</div>
+        <div class="loading-text" id="loadingText">Verificando páginas...</div>
     </div>
 
     <!-- ========== HEADER ========== -->
     <header class="main-header">
         <div class="header-left">
-            <div class="logo-icon">
+            <div class="logo-icon" onclick="window.location.reload()">
                 <i class="fas fa-seedling"></i>
             </div>
             <div class="header-title">Palácio da Biologia</div>
@@ -523,6 +537,10 @@
             <button class="intro-btn" onclick="showAllTopicsModal()">
                 <i class="fas fa-list"></i>
                 Ver Todos os Tópicos
+            </button>
+            <button class="intro-btn" onclick="checkAllPages()" style="margin-left: 15px; background: var(--secondary-green);">
+                <i class="fas fa-sync-alt"></i>
+                Verificar Páginas
             </button>
         </div>
 
@@ -559,7 +577,7 @@
         </div>
     </main>
 
-    <!-- ========== MODAL APENAS PARA AJUDA ========== -->
+    <!-- ========== MODAL ========== -->
     <div class="modal-overlay" id="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -577,11 +595,11 @@
 
     <script>
         // ========== CONFIGURAÇÃO DO GITHUB PAGES ==========
-        const GITHUB_USERNAME = "Sr71n3-creator"; // SEU USERNAME DO GITHUB
-        const REPOSITORY_NAME = "biolomem"; // NOME DO SEU REPOSITÓRIO
+        const GITHUB_USERNAME = "Sr71n3-creator";
+        const REPOSITORY_NAME = "biolomem"; // VERIFIQUE SE ESTE É O NOME CORRETO
         const BASE_URL = `https://${GITHUB_USERNAME}.github.io/${REPOSITORY_NAME}/`;
 
-        // ========== DADOS ORIGINAIS ==========
+        // ========== DADOS DOS TÓPICOS ==========
         const topics = [
             // Fundamentos da Vida (1-11)
             { number: "1", title: "Origem da Vida", icon: "🌋", section: 1 },
@@ -635,6 +653,7 @@
 
         // ========== VARIÁVEIS GLOBAIS ==========
         let soundEnabled = true;
+        let pageStatus = {}; // Armazena status das páginas
 
         // ========== INICIALIZAÇÃO ==========
         document.addEventListener('DOMContentLoaded', function() {
@@ -643,6 +662,7 @@
             createAnimatedBackground();
             renderTopicCards();
             setupEventListeners();
+            checkAllPages(); // Verifica todas as páginas ao carregar
             
             // Detectar Kodular/WebView
             if (/Kodular|WebView|Android.*AppleWebKit/.test(navigator.userAgent)) {
@@ -666,11 +686,78 @@
             }
         }
 
-        // ========== FUNÇÃO PARA OBTER URL CORRETA ==========
+        // ========== FUNÇÃO PARA OBTER URL ==========
         function getTopicUrl(topicNumber) {
             const formattedNumber = topicNumber.padStart(2, '0');
-            // ARQUIVO DIRETO - NÃO PASTA
             return `${BASE_URL}topico-${formattedNumber}.html`;
+        }
+
+        // ========== VERIFICAR SE PÁGINA EXISTE ==========
+        async function checkPageExists(topicNumber) {
+            const url = getTopicUrl(topicNumber);
+            
+            try {
+                const response = await fetch(url, { method: 'HEAD', mode: 'no-cors' });
+                // Como não podemos ler o status em no-cors, usamos uma abordagem diferente
+                return true; // Assumimos que existe
+            } catch (error) {
+                // Tenta carregar a página em um iframe invisível
+                return new Promise((resolve) => {
+                    const iframe = document.createElement('iframe');
+                    iframe.style.display = 'none';
+                    iframe.src = url;
+                    
+                    iframe.onload = () => {
+                        document.body.removeChild(iframe);
+                        resolve(true);
+                    };
+                    
+                    iframe.onerror = () => {
+                        document.body.removeChild(iframe);
+                        resolve(false);
+                    };
+                    
+                    document.body.appendChild(iframe);
+                    
+                    // Timeout após 3 segundos
+                    setTimeout(() => {
+                        if (iframe.parentNode) {
+                            document.body.removeChild(iframe);
+                        }
+                        resolve(false);
+                    }, 3000);
+                });
+            }
+        }
+
+        // ========== VERIFICAR TODAS AS PÁGINAS ==========
+        async function checkAllPages() {
+            showLoading("Verificando disponibilidade das páginas...");
+            
+            for (const topic of topics) {
+                const exists = await checkPageExists(topic.number);
+                pageStatus[topic.number] = exists;
+                
+                // Atualiza visual do card
+                const card = document.querySelector(`[data-topic-number="${topic.number}"]`);
+                if (card) {
+                    if (exists) {
+                        card.classList.remove('topic-unavailable');
+                        card.style.opacity = "1";
+                        card.title = "Clique para abrir";
+                    } else {
+                        card.classList.add('topic-unavailable');
+                        card.style.opacity = "0.7";
+                        card.title = "Página não disponível";
+                    }
+                }
+            }
+            
+            hideLoading();
+            
+            // Mostra resumo
+            const available = Object.values(pageStatus).filter(v => v).length;
+            showNotification(`✅ ${available} de ${topics.length} páginas disponíveis`, 'success');
         }
 
         // ========== RENDERIZAR CARTÕES ==========
@@ -695,12 +782,31 @@
                     <div class="topic-title">${topic.title}</div>
                 `;
                 
-                // URL DIRETA - SEM VERIFICAÇÕES
-                const topicUrl = getTopicUrl(topic.number);
-                card.href = topicUrl;
-                card.target = "_self"; // Abre na mesma aba
+                // URL inicial
+                card.href = getTopicUrl(topic.number);
                 
-                // NÃO INTERCEPTAMOS O CLIQUE - deixa o navegador fazer seu trabalho
+                // Intercepta clique para verificar antes de abrir
+                card.onclick = async (e) => {
+                    e.preventDefault();
+                    
+                    const exists = pageStatus[topic.number];
+                    
+                    if (exists) {
+                        // Abre diretamente
+                        window.open(getTopicUrl(topic.number), '_blank');
+                    } else {
+                        // Mostra opções
+                        const choice = confirm(`A página do tópico "${topic.title}" não foi encontrada.\n\nDeseja:\n1. Tentar abrir mesmo assim (Cancelar)\n2. Verificar URL (OK)`);
+                        
+                        if (choice) {
+                            // Mostra a URL
+                            alert(`URL do tópico:\n${getTopicUrl(topic.number)}\n\nCertifique-se de que o arquivo "topico-${topic.number.padStart(2, '0')}.html" está na raiz do repositório.`);
+                        } else {
+                            // Tenta abrir mesmo assim
+                            window.open(getTopicUrl(topic.number), '_blank');
+                        }
+                    }
+                };
                 
                 if (topic.section >= 1 && topic.section <= 4) {
                     sections[topic.section - 1].appendChild(card);
@@ -708,69 +814,69 @@
             });
         }
 
-        // ========== NAVEGAÇÃO DIRETA (para outros usos) ==========
-        function navigateToTopicDirectly(topic) {
-            // Função auxiliar para navegação direta
-            const topicUrl = getTopicUrl(topic.number);
-            window.location.href = topicUrl;
-        }
-
-        // ========== LOADING ==========
-        function showLoading(message = "Carregando conteúdo...") {
-            const overlay = document.getElementById('loadingOverlay');
-            const text = document.getElementById('loadingText');
-            
-            text.textContent = message;
-            overlay.style.display = 'flex';
-        }
-
-        function hideLoading() {
-            const overlay = document.getElementById('loadingOverlay');
-            overlay.style.display = 'none';
-        }
-
-        // ========== MODAL DE AJUDA ==========
+        // ========== FUNÇÕES ADICIONAIS ==========
         function showHelp() {
             const modalTitle = document.getElementById('modalTitleText');
             const modalBody = document.getElementById('modalBody');
             
-            modalTitle.textContent = 'Ajuda';
+            modalTitle.textContent = 'Solução de Problemas';
             
             const content = `
                 <div style="max-width: 600px; margin: 0 auto;">
                     <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 25px; margin-bottom: 20px;">
-                        <h3 style="color: var(--primary-green); margin-bottom: 15px;">📚 Como usar o Palácio da Biologia</h3>
-                        <ul style="color: var(--text-secondary); padding-left: 20px; line-height: 1.6;">
-                            <li><strong>Clique em qualquer tópico</strong> para abrir sua página completa no GitHub Pages</li>
-                            <li>Cada tópico tem sua própria URL exclusiva</li>
-                            <li>Use o botão "Ver Todos os Tópicos" para uma visão geral</li>
-                            <li>Seu progresso é salvo automaticamente no navegador</li>
-                            <li>Pode usar em qualquer dispositivo</li>
-                        </ul>
+                        <h3 style="color: var(--primary-green); margin-bottom: 15px;">🚨 Páginas não encontradas</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 15px;">
+                            Se as páginas não estão abrindo, siga estes passos:
+                        </p>
+                        <ol style="color: var(--text-secondary); padding-left: 20px; line-height: 1.6;">
+                            <li><strong>Ative o GitHub Pages:</strong> Settings → Pages → Source → main → / (root)</li>
+                            <li><strong>Verifique os arquivos:</strong> Certifique-se de que os arquivos "topico-01.html", "topico-02.html", etc. estão na raiz do repositório</li>
+                            <li><strong>Verifique o nome:</strong> Seu repositório se chama "${REPOSITORY_NAME}"?</li>
+                            <li><strong>URL de teste:</strong> Acesse manualmente:<br>
+                                <code style="color: var(--light-green);">${BASE_URL}topico-01.html</code>
+                            </li>
+                        </ol>
                     </div>
                     
                     <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 25px; margin-bottom: 20px;">
-                        <h3 style="color: var(--primary-green); margin-bottom: 15px;">🔗 Estrutura do GitHub Pages</h3>
+                        <h3 style="color: var(--primary-green); margin-bottom: 15px;">🔗 Estrutura necessária:</h3>
                         <p style="color: var(--text-secondary); margin-bottom: 10px;">
-                            Cada tópico está em um arquivo HTML separado:
+                            Seu repositório deve ter esta estrutura:
                         </p>
-                        <code style="display: block; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 15px; color: var(--light-green);">
-                            ${BASE_URL}topico-01.html<br>
-                            ${BASE_URL}topico-02.html<br>
-                            ...<br>
-                            ${BASE_URL}topico-41.html
+                        <code style="display: block; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 15px; color: var(--light-green); font-size: 0.9rem;">
+                            / (raiz)<br>
+                            ├── index.html<br>
+                            ├── topico-01.html<br>
+                            ├── topico-02.html<br>
+                            ├── topico-03.html<br>
+                            └── ... (todos os 41 arquivos)
                         </code>
                     </div>
                     
-                    <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 25px;">
-                        <h3 style="color: var(--primary-green); margin-bottom: 15px;">🎯 Dicas de Estudo</h3>
-                        <ul style="color: var(--text-secondary); padding-left: 20px; line-height: 1.6;">
-                            <li>Estude um tópico por dia</li>
-                            <li>Faça anotações enquanto estuda</li>
-                            <li>Revise os tópicos anteriores toda semana</li>
-                            <li>Complete os quizzes para fixar o conteúdo</li>
-                            <li>Associe imagens aos conceitos</li>
-                        </ul>
+                    <div style="text-align: center;">
+                        <button onclick="checkAllPages()" style="
+                            padding: 12px 25px;
+                            background: var(--primary-green);
+                            border: none;
+                            border-radius: 8px;
+                            color: white;
+                            font-weight: 600;
+                            cursor: pointer;
+                            margin-right: 10px;
+                        ">
+                            <i class="fas fa-sync-alt"></i> Verificar Novamente
+                        </button>
+                        <button onclick="window.open('https://github.com/${GITHUB_USERNAME}/${REPOSITORY_NAME}', '_blank')" style="
+                            padding: 12px 25px;
+                            background: rgba(255,255,255,0.1);
+                            border: 1px solid var(--primary-green);
+                            border-radius: 8px;
+                            color: var(--primary-green);
+                            font-weight: 600;
+                            cursor: pointer;
+                        ">
+                            <i class="fab fa-github"></i> Abrir Repositório
+                        </button>
                     </div>
                 </div>
             `;
@@ -788,20 +894,35 @@
             let content = `
                 <div style="text-align: center; margin-bottom: 20px;">
                     <p style="color: var(--text-secondary); font-size: 1.1rem;">
-                        Clique em qualquer tópico para acessar a página completa
+                        ${Object.values(pageStatus).filter(v => v).length} de ${topics.length} páginas disponíveis
                     </p>
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; max-height: 60vh; overflow-y: auto; padding: 10px;">
             `;
             
             topics.forEach(topic => {
+                const exists = pageStatus[topic.number];
                 const topicUrl = getTopicUrl(topic.number);
+                
                 content += `
-                    <a href="${topicUrl}" class="topic-card" style="min-height: 80px; flex-direction: row; justify-content: flex-start; gap: 15px; text-align: left; display: flex; align-items: center; padding: 15px;">
+                    <a href="${topicUrl}" onclick="event.preventDefault(); checkAndOpen('${topic.number}', '${topic.title}')" class="topic-card" style="
+                        min-height: 80px; 
+                        flex-direction: row; 
+                        justify-content: flex-start; 
+                        gap: 15px; 
+                        text-align: left; 
+                        display: flex; 
+                        align-items: center; 
+                        padding: 15px;
+                        ${!exists ? 'opacity: 0.6; background: rgba(255,0,0,0.1);' : ''}
+                    ">
                         <div style="font-size: 1.8rem;">${topic.icon}</div>
                         <div>
                             <div style="font-weight: bold; color: var(--primary-green);">${topic.number}.</div>
                             <div style="color: var(--text-primary); font-size: 0.95rem;">${topic.title}</div>
+                            <div style="color: ${exists ? 'var(--light-green)' : '#f87171'}; font-size: 0.8rem; margin-top: 5px;">
+                                ${exists ? '✅ Disponível' : '❌ Não encontrado'}
+                            </div>
                         </div>
                     </a>
                 `;
@@ -813,11 +934,20 @@
             document.getElementById('modal').style.display = 'flex';
         }
 
-        function closeModal() {
-            document.getElementById('modal').style.display = 'none';
+        function checkAndOpen(topicNumber, title) {
+            const exists = pageStatus[topicNumber];
+            
+            if (exists) {
+                window.open(getTopicUrl(topicNumber), '_blank');
+            } else {
+                const choice = confirm(`A página do tópico "${title}" não foi encontrada.\n\nDeseja tentar abrir mesmo assim?`);
+                if (choice) {
+                    window.open(getTopicUrl(topicNumber), '_blank');
+                }
+            }
         }
 
-        // ========== FUNÇÕES ADICIONAIS ==========
+        // ========== FUNÇÕES UTILITÁRIAS ==========
         function toggleSound() {
             soundEnabled = !soundEnabled;
             const btn = document.querySelector('.header-btn:nth-child(1) i');
@@ -826,20 +956,37 @@
             showNotification(soundEnabled ? '🔊 Som ativado' : '🔇 Som desativado');
         }
 
+        function showLoading(message = "Carregando...") {
+            const overlay = document.getElementById('loadingOverlay');
+            const text = document.getElementById('loadingText');
+            
+            text.textContent = message;
+            overlay.style.display = 'flex';
+        }
+
+        function hideLoading() {
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.style.display = 'none';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
         function showNotification(message, type = 'info') {
             const notification = document.createElement('div');
             notification.style.cssText = `
                 position: fixed;
                 top: 80px;
                 right: 20px;
-                background: ${type === 'warning' ? 'rgba(245, 158, 11, 0.9)' : 'rgba(16, 185, 129, 0.9)'};
+                background: ${type === 'error' ? 'rgba(239, 68, 68, 0.9)' : type === 'success' ? 'rgba(16, 185, 129, 0.9)' : 'rgba(30, 41, 59, 0.9)'};
                 color: white;
                 padding: 15px 25px;
                 border-radius: 10px;
                 z-index: 10000;
                 font-weight: 600;
                 backdrop-filter: blur(10px);
-                border: 1px solid ${type === 'warning' ? '#f59e0b' : 'var(--primary-green)'};
+                border: 1px solid ${type === 'error' ? '#ef4444' : type === 'success' ? 'var(--primary-green)' : 'rgba(255,255,255,0.2)'};
                 transform: translateX(120%);
                 transition: transform 0.3s ease;
                 max-width: 300px;
@@ -862,7 +1009,6 @@
         }
 
         function setupEventListeners() {
-            // Fechar modal com ESC
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
                     closeModal();
@@ -870,7 +1016,6 @@
                 }
             });
             
-            // Fechar modal clicando fora
             document.getElementById('modal').addEventListener('click', (e) => {
                 if (e.target === document.getElementById('modal')) {
                     closeModal();
@@ -895,16 +1040,8 @@
         // ========== INICIALIZAR APÓS CARREGAMENTO ==========
         window.onload = function() {
             setTimeout(() => {
-                showNotification('🏛️ Bem-vindo ao Palácio da Biologia!');
+                showNotification('🏛️ Palácio da Biologia - Verificando páginas...');
             }, 1000);
-            
-            // Mostrar instrução inicial
-            setTimeout(() => {
-                if (!localStorage.getItem('firstVisit')) {
-                    showHelp();
-                    localStorage.setItem('firstVisit', 'true');
-                }
-            }, 2000);
         };
     </script>
 </body>
